@@ -1,6 +1,8 @@
 import logging
+import os
 from typing import Dict, Literal, Optional, TypedDict
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from tavily import TavilyClient
 
@@ -14,7 +16,8 @@ tavily: TavilyClient | None = None
 def get_tavily_client() -> TavilyClient:
     global tavily
     if tavily is None:
-        tavily = TavilyClient()
+        load_dotenv(".env.local")
+        tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
     return tavily
 
 
@@ -69,13 +72,19 @@ def search_relics_by_period_and_genre(
 
 
 def search_historical_facts(query: str) -> tuple[list, list]:
+    refined_query = f"국립중앙박물관 유물 해설 역사 배경 {query}"
     tavily_response = get_tavily_client().search(
-        query=query,
-        include_domains=["ko.wikipedia.org", "encykorea.aks.ac.kr"],
+        query=refined_query,
+        include_domains=[
+            "museum.go.kr",
+            "www.museum.go.kr",
+            "ko.wikipedia.org",
+            "encykorea.aks.ac.kr",
+        ],
         max_results=3,
         search_depth="advanced",
     )
-    logger.info(f"[query] {query}")
+    logger.info(f"[query] {refined_query}")
     references: list[tuple[str, str]] = []
     contents: list[str] = []
     for result in tavily_response["results"]:

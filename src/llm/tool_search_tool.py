@@ -3,7 +3,9 @@ from typing import Literal, Optional, Dict, TypedDict
 from pydantic import BaseModel, Field
 from .llm import claude_4_5 as claude
 import logging
+import os
 from tavily import TavilyClient
+from dotenv import load_dotenv
 from .prompt_templates import history_based_prompt, tool_system_prompt
 
 logger = logging.getLogger(__name__)
@@ -15,7 +17,8 @@ tavily: TavilyClient | None = None
 def get_tavily_client() -> TavilyClient:
     global tavily
     if tavily is None:
-        tavily = TavilyClient()
+        load_dotenv(".env.local")
+        tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
     return tavily
 
 
@@ -79,13 +82,19 @@ def search_relics_by_period_and_genre(
 
 
 def search_historical_facts(query) -> tuple[list, str]:
+    refined_query = f"국립중앙박물관 유물 해설 역사 배경 {query}"
     tavily_response = get_tavily_client().search(
-        query=query,
-        include_domains=["ko.wikipedia.org", "encykorea.aks.ac.kr"],
+        query=refined_query,
+        include_domains=[
+            "museum.go.kr",
+            "www.museum.go.kr",
+            "ko.wikipedia.org",
+            "encykorea.aks.ac.kr",
+        ],
         max_results=3,
         search_depth="advanced"
     )
-    logger.info(f"[query] {query}")
+    logger.info(f"[query] {refined_query}")
     logger.info(f"[tavily_response] {tavily_response['answer']}")
     references: list[tuple[str, str]] = []
     contents: list[str] = []
