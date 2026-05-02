@@ -9,7 +9,14 @@ from .prompt_templates import history_based_prompt, tool_system_prompt
 logger = logging.getLogger(__name__)
 
 client = Anthropic()
-tavily = TavilyClient()
+tavily: TavilyClient | None = None
+
+
+def get_tavily_client() -> TavilyClient:
+    global tavily
+    if tavily is None:
+        tavily = TavilyClient()
+    return tavily
 
 
 class Category(BaseModel):
@@ -72,7 +79,7 @@ def search_relics_by_period_and_genre(
 
 
 def search_historical_facts(query) -> tuple[list, str]:
-    tavily_response = tavily.search(
+    tavily_response = get_tavily_client().search(
         query=query,
         include_domains=["ko.wikipedia.org", "encykorea.aks.ac.kr"],
         max_results=3,
