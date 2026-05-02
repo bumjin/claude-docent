@@ -3,7 +3,7 @@ from io import BytesIO
 from PIL import Image
 import anthropic
 import subprocess, tempfile, os
-import tempfile, webbrowser, urllib.parse, pathlib
+import tempfile, webbrowser, pathlib
 
 MAX_PIXELS = 1_150_000
 #MAX_PIXELS = 1_000_000
@@ -12,9 +12,7 @@ def show_image(img: Image.Image):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
         img.save(tmp, "JPEG")
         tmp.flush()
-        file_url = "file://" + urllib.parse.quote(
-            str(pathlib.Path(tmp.name).resolve())
-        )
+        file_url = pathlib.Path(tmp.name).resolve().as_uri()
         webbrowser.open_new_tab(file_url)
         
 def resize(img: Image.Image, max_pixels: int = MAX_PIXELS):

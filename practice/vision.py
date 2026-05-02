@@ -2,15 +2,13 @@ import base64
 import anthropic
 from PIL import Image   
 from io import BytesIO
-import tempfile, webbrowser, urllib.parse, pathlib
+import tempfile, webbrowser, pathlib
 
 def show_image(img: Image.Image):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
         img.save(tmp, "JPEG")
         tmp.flush()
-        file_url = "file://" + urllib.parse.quote(
-            str(pathlib.Path(tmp.name).resolve())
-        )
+        file_url = pathlib.Path(tmp.name).resolve().as_uri()
         webbrowser.open_new_tab(file_url)
 
 def get_base64_data(file_path):

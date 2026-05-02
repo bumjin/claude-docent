@@ -2,7 +2,7 @@ import base64
 import anthropic
 from PIL import Image   
 from io import BytesIO
-import tempfile, webbrowser, urllib.parse, pathlib
+import tempfile, webbrowser, pathlib
 
 image_file = "data/leaflet/전시해설프로그램.png"
 json_file = "data/leaflet/guide_program.json"
@@ -17,9 +17,7 @@ def show_image(img: Image.Image):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
         img.save(tmp, "PNG")
         tmp.flush()
-        file_url = "file://" + urllib.parse.quote(
-            str(pathlib.Path(tmp.name).resolve())
-        )
+        file_url = pathlib.Path(tmp.name).resolve().as_uri()
         webbrowser.open_new_tab(file_url)
 
 def get_base64_data(file_path):
